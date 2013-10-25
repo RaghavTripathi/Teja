@@ -78,7 +78,8 @@ public class P2mpServer {
                 Datagram datagram = (Datagram) oos.readObject();
                 System.out.println("Size of the datagram" + datagram.getData().length);
                 System.out.println("Header Sequence Number:"+(datagram.getHeader()).getSequenceNumber());
-                
+                System.out.println("packet recieved from :"+packet.getAddress());
+                System.out.println("packet recieved from port:"+packet.getPort());
                 int presentSequenceNumber = (datagram.getHeader()).getSequenceNumber();
                 if(false/*checkPacketDrop(getLossProbability())*/){
                 
@@ -90,7 +91,7 @@ public class P2mpServer {
                     
                 } else  if (checkValidSequenceNumber(presentSequenceNumber)){
                     // WRITE TO A FILE
-                    writeByteArrayToFile(fos, (packet.getData()));
+                    writeByteArrayToFile(fos, datagram.getData());
 
                     // SEND AN ACK BACK
                     sendAck(socket,presentSequenceNumber, packet.getAddress(), packet.getPort());
@@ -104,9 +105,9 @@ public class P2mpServer {
                 else {
                     System.out.println("****************NO CONDITION MATCH **************");
                 }
-              
+                socket.close(); 
             }  
-            socket.close();     
+                
             fos.close();
         } catch (SocketException e) {
               e.printStackTrace();
@@ -152,6 +153,7 @@ public class P2mpServer {
     public void writeByteArrayToFile( FileOutputStream fos, byte[] bos){
         
         try {
+            System.out.println("Buffer Length :"+bos.length);
             fos.write(bos);
             fos.flush();
         } catch (IOException e) {
