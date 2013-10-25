@@ -89,7 +89,7 @@ public class P2mpServer {
                     writeByteArrayToFile(fos, (packet.getData()));
 
                     // SEND AN ACK BACK
-                    sendAck(presentSequenceNumber, packet.getAddress(), packet.getPort());
+                    sendAck(socket,presentSequenceNumber, packet.getAddress(), packet.getPort());
                     }
                     
             }       
@@ -103,23 +103,23 @@ public class P2mpServer {
 
     }
   
-    public void sendAck(int seqNumber, InetAddress IPAddress, int port) {
+    public void sendAck(DatagramSocket socket,int seqNumber, InetAddress IPAddress, int port) {
       
         try {
-        Header hd = new Header(seqNumber, "1010101", type.ACK);
-        Datagram dg = new Datagram(hd, null);
-        ByteArrayOutputStream ba = new ByteArrayOutputStream();
-        ObjectOutputStream objos = new ObjectOutputStream(ba);
-        objos.writeObject(dg);
-        objos.flush();
-        byte[] buffer= ba.toByteArray();
-        int bufferLen = buffer.length;;
-        
-        
-        //TODO CHECK ......PORT NUMBER
-        DatagramSocket socketSend = new DatagramSocket(1233);
-        DatagramPacket packetSend = new DatagramPacket(buffer, bufferLen,IPAddress, port);
-        socketSend.send(packetSend);
+            Header hd = new Header(seqNumber, "1010101", type.ACK);
+            Datagram dg = new Datagram(hd, null);
+            ByteArrayOutputStream ba = new ByteArrayOutputStream();
+            ObjectOutputStream objos = new ObjectOutputStream(ba);
+            objos.writeObject(dg);
+            objos.flush();
+            byte[] buffer= ba.toByteArray();
+            int bufferLen = buffer.length;;
+            
+            
+            //TODO CHECK ......PORT NUMBER
+           
+            DatagramPacket packetSend = new DatagramPacket(buffer, bufferLen,IPAddress, port);
+            socket.send(packetSend);
         }
         catch(IOException e) {
             e.printStackTrace();
