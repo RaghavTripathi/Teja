@@ -76,11 +76,11 @@ public class P2mpServer {
                 Datagram datagram = (Datagram) oos.readObject();
                 
                 int presentSequenceNumber = (datagram.getHeader()).getSequenceNumber();
-                if(checkPacketDrop(getLossProbability())){
+                if(false/*checkPacketDrop(getLossProbability())*/){
                 
                    System.out.println("Packet drop sequence number :"+presentSequenceNumber);
                 
-                } else if (checkSum()){
+                } else if (false/*checkSum()*/){
                
                     //TODO
                     
@@ -114,10 +114,6 @@ public class P2mpServer {
             objos.flush();
             byte[] buffer= ba.toByteArray();
             int bufferLen = buffer.length;;
-            
-            
-            //TODO CHECK ......PORT NUMBER
-           
             DatagramPacket packetSend = new DatagramPacket(buffer, bufferLen,IPAddress, port);
             socket.send(packetSend);
         }
