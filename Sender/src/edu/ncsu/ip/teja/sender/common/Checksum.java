@@ -1,4 +1,4 @@
-package edu.ncsu.ip.teja.common;
+package edu.ncsu.ip.teja.sender.common;
 
 public class Checksum {
 

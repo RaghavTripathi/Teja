@@ -10,11 +10,11 @@ import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.ncsu.ip.teja.common.Checksum;
 import edu.ncsu.ip.teja.dao.Datagram;
 import edu.ncsu.ip.teja.dao.Header;
 import edu.ncsu.ip.teja.dao.Header.type;
 import edu.ncsu.ip.teja.sender.client.Receiver;
+import edu.ncsu.ip.teja.sender.common.Checksum;
 
 public class ReliableDataTransfer implements Runnable {
 
