@@ -29,7 +29,7 @@ public class P2MPClient {
     public void init() {
         byte[] fileContent = readBytesFromFile();
         int filePointer = 0;
-        int sequenceNumber = 0;
+        int sequenceNumber = 1;
         
         while (filePointer <= fileContent.length) {
             int end;
@@ -43,8 +43,14 @@ public class P2MPClient {
             byte[] data = Arrays.copyOfRange(fileContent, filePointer, end);
             filePointer = filePointer + getMss();
             
+            if (sequenceNumber == 1) {
+                sequenceNumber = 0; 
+            } else if (sequenceNumber == 0){
+                sequenceNumber = 1;
+            }
+            
             for(Receiver receiver : receiverList) {
-                ReliableDataTransfer rdtThread = new ReliableDataTransfer(receiver, data, sequenceNumber++);
+                ReliableDataTransfer rdtThread = new ReliableDataTransfer(receiver, data, sequenceNumber);
                 rdtThreadList.add(new Thread(rdtThread));
             }   
             

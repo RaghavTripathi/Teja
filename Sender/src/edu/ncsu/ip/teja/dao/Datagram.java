@@ -1,7 +1,10 @@
 package edu.ncsu.ip.teja.dao;
 
-public class Datagram {
+import java.io.Serializable;
+
+public class Datagram implements Serializable {
     
+    private static final long serialVersionUID = 1L;
     private final Header header;
     private final byte[] data;
     

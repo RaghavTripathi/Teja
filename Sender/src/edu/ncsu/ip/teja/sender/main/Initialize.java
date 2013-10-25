@@ -17,13 +17,14 @@ public class Initialize {
     public static void main(String[] args) {
         
         int numberOfReceivers = args.length - 3;            //server port number, filename, MSS
-        String receiverAddrs[] = new String[numberOfReceivers];   
-        int i = 0;
         if (numberOfReceivers <= 0) {
             System.out.println("Please pass atleast one receiver address as command line argument");
             System.out.println("Exiting!");
             System.exit(1);
         }
+        
+        String receiverAddrs[] = new String[numberOfReceivers];   
+        int i = 0;
         
         LOGGER.info("Number of receivers: " + numberOfReceivers);
         for (i = 0; i < numberOfReceivers; i++) {

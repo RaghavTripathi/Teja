@@ -1,7 +1,10 @@
 package edu.ncsu.ip.teja.dao;
 
-public class Header {
+import java.io.Serializable;
 
+public class Header implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     private final int sequenceNumber;
     private final String checksum;
     private final type datagramType;    

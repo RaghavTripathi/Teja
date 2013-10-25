@@ -1,9 +1,10 @@
 package edu.ncsu.ip.teja.sender.transport;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -60,8 +61,10 @@ public class ReliableDataTransfer implements Runnable {
         }
 
         byte[] buf = baos.toByteArray();
-        byte[] bufferLength = BigInteger.valueOf(buf.length).toByteArray();
-        DatagramPacket bufferLengthPacket = new DatagramPacket(bufferLength, 
+        /*
+         byte[] bufferLength = BigInteger.valueOf(buf.length).toByteArray();
+         
+         DatagramPacket bufferLengthPacket = new DatagramPacket(bufferLength, 
                                                                 4, 
                                                                 receiver.getReceiverAddr(), 
                                                                 receiver.getReceiverPort());
@@ -71,7 +74,40 @@ public class ReliableDataTransfer implements Runnable {
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Exception while sending bufferLengthPacket", e);
             return;
+        }*/
+        
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, receiver.getReceiverAddr(), receiver.getReceiverPort());
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Exception while sending data packet", e);
+            return;
         }
+        
+        byte[] ackBuffer = new byte[11256];
+        packet = new DatagramPacket(ackBuffer, ackBuffer.length);
+        
+        try {
+            socket.receive(packet);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Exception while recieving ack packet", e);
+            return;
+        }
+        
+        ByteArrayInputStream bais = new ByteArrayInputStream(ackBuffer);
+        ObjectInputStream ois;
+        try {
+            ois = new ObjectInputStream(bais);
+            Datagram ack = (Datagram) ois.readObject();
+            System.out.println("Received ACK with sequence number: " + ack.getHeader().getSequenceNumber()); 
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Exception while creating ObjectInputStream", e);
+            return;
+        } catch (ClassNotFoundException e) {
+            LOGGER.log(Level.SEVERE, "Exception while creating ack object", e);
+            return;
+        }
+        
         
         socket.close();
     }
