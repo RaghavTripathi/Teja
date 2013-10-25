@@ -75,7 +75,7 @@ public class ReliableDataTransfer implements Runnable {
         
         byte[] ackBuffer = new byte[11256];
         packet = new DatagramPacket(ackBuffer, ackBuffer.length);
-        
+        System.out.println("Waiting for ACK...");
         try {
             socket.receive(packet);
         } catch (IOException e) {

@@ -39,6 +39,9 @@ public class Initialize {
         
         P2MPClient client = new P2MPClient(receiverList, filename, mss);
         client.init();
+        
+        System.out.println("P2MPClient finished. Exiting!");
+        System.exit(1);
     }
     
     private static List<Receiver> generateReceiverList(String[] receiverAddrs, int receiverPort) {

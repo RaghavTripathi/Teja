@@ -30,22 +30,23 @@ public class P2MPClient {
         byte[] fileContent = readBytesFromFile();
         int filePointer = 0;
         int sequenceNumber = 1;
-        boolean isEOF;
+        boolean isEOF = false;
+        LOGGER.info("filecontent.length: " + fileContent.length);
         while (filePointer <= fileContent.length) {
             int end;
             List<Thread> rdtThreadList = new LinkedList<Thread>();
             if (filePointer + getMss() > fileContent.length) {
                 end = fileContent.length;
-                isEOF = false;
+                isEOF = true;
             } else {
                 end = filePointer + getMss();
-                isEOF = true;
+                isEOF = false;
             }
             
-            System.out.println("filePointer: " + filePointer + ", end: " + end);
+            // System.out.println("Before filePointer: " + filePointer + " , end: " + end + " , isEOF: " + isEOF);
             byte[] data = Arrays.copyOfRange(fileContent, filePointer, end);
             filePointer = filePointer + getMss();
-            
+            // System.out.println("After filePointer: " + filePointer);
             if (sequenceNumber == 1) {
                 sequenceNumber = 0; 
             } else if (sequenceNumber == 0){
