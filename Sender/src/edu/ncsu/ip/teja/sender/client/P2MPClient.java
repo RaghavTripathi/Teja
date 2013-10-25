@@ -30,16 +30,19 @@ public class P2MPClient {
         byte[] fileContent = readBytesFromFile();
         int filePointer = 0;
         int sequenceNumber = 1;
-        
+        boolean isEOF;
         while (filePointer <= fileContent.length) {
             int end;
             List<Thread> rdtThreadList = new LinkedList<Thread>();
             if (filePointer + getMss() > fileContent.length) {
                 end = fileContent.length;
+                isEOF = false;
             } else {
                 end = filePointer + getMss();
+                isEOF = true;
             }
             
+            System.out.println("filePointer: " + filePointer + ", end: " + end);
             byte[] data = Arrays.copyOfRange(fileContent, filePointer, end);
             filePointer = filePointer + getMss();
             
@@ -50,7 +53,7 @@ public class P2MPClient {
             }
             
             for(Receiver receiver : receiverList) {
-                ReliableDataTransfer rdtThread = new ReliableDataTransfer(receiver, data, sequenceNumber);
+                ReliableDataTransfer rdtThread = new ReliableDataTransfer(receiver, data, sequenceNumber, isEOF);
                 rdtThreadList.add(new Thread(rdtThread));
             }   
             

@@ -24,12 +24,14 @@ public class ReliableDataTransfer implements Runnable {
     private final Receiver receiver;
     private final byte[] data;
     private final int sequenceNumber;
+    private final boolean isEOF;
     
-    public ReliableDataTransfer(Receiver receiver, byte[] data, int sequenceNumber) {
+    public ReliableDataTransfer(Receiver receiver, byte[] data, int sequenceNumber, boolean isEOF) {
         super();
         this.receiver = receiver;
         this.data = data;
         this.sequenceNumber = sequenceNumber;
+        this.isEOF = isEOF;
     }
     
     @Override
@@ -45,7 +47,7 @@ public class ReliableDataTransfer implements Runnable {
         
         // Create header, datagram objects
         String checkSum = Checksum.create(data);
-        Header header = new Header(getSequenceNumber(), checkSum, type.DATA);
+        Header header = new Header(getSequenceNumber(), checkSum, type.DATA, isEOF);
         Datagram datagram = new Datagram(header, data);
 
         // Create byte[] for datagram object
@@ -61,21 +63,8 @@ public class ReliableDataTransfer implements Runnable {
         }
 
         byte[] buf = baos.toByteArray();
-        /*
-         byte[] bufferLength = BigInteger.valueOf(buf.length).toByteArray();
-         
-         DatagramPacket bufferLengthPacket = new DatagramPacket(bufferLength, 
-                                                                4, 
-                                                                receiver.getReceiverAddr(), 
-                                                                receiver.getReceiverPort());
         
-        try {
-            socket.send(bufferLengthPacket);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Exception while sending bufferLengthPacket", e);
-            return;
-        }*/
-        
+        System.out.println("Sending buffer of size: " + buf.length);
         DatagramPacket packet = new DatagramPacket(buf, buf.length, receiver.getReceiverAddr(), receiver.getReceiverPort());
         try {
             socket.send(packet);
