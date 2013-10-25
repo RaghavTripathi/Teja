@@ -61,19 +61,23 @@ public class P2mpServer {
     }
     public void init() {
         try {
+            
+            boolean check = true;
             FileOutputStream fos = new FileOutputStream(new File(getFileName()));
             
-            while (true){
+            while (check){
                    
                 socket = new DatagramSocket(getPortNumber());
                 byte[] buf = new byte[11256];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket.receive(packet);
-           
+                
                 // convert this byte stream to object thing
                 ByteArrayInputStream baos = new ByteArrayInputStream(buf);
                 ObjectInputStream oos = new ObjectInputStream(baos);
                 Datagram datagram = (Datagram) oos.readObject();
+                System.out.println("Size of the datagram" + datagram.getData().length);
+                System.out.println("Header Sequence Number:"+(datagram.getHeader()).getSequenceNumber());
                 
                 int presentSequenceNumber = (datagram.getHeader()).getSequenceNumber();
                 if(false/*checkPacketDrop(getLossProbability())*/){
@@ -90,9 +94,20 @@ public class P2mpServer {
 
                     // SEND AN ACK BACK
                     sendAck(socket,presentSequenceNumber, packet.getAddress(), packet.getPort());
+                    if (datagram.getHeader().isEOF()){
+                            check = false;
+                            System.out.println("End of file");
+                            
                     }
                     
-            }       
+                    }
+                else {
+                    System.out.println("****************NO CONDITION MATCH **************");
+                }
+              
+            }  
+            socket.close();     
+            fos.close();
         } catch (SocketException e) {
               e.printStackTrace();
         } catch (IOException e) {
@@ -100,13 +115,13 @@ public class P2mpServer {
         } catch (ClassNotFoundException e) {
               e.printStackTrace();
         }
-
+        
     }
   
     public void sendAck(DatagramSocket socket,int seqNumber, InetAddress IPAddress, int port) {
       
         try {
-            Header hd = new Header(seqNumber, "1010101", type.ACK);
+            Header hd = new Header(seqNumber, "1010101", type.ACK,false);
             Datagram dg = new Datagram(hd, null);
             ByteArrayOutputStream ba = new ByteArrayOutputStream();
             ObjectOutputStream objos = new ObjectOutputStream(ba);
