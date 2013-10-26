@@ -6,24 +6,13 @@ public final class Receiver {
 
     private final InetAddress receiverAddr;
     private final int receiverPort;
-    private final int timeoutInSec;
-    private boolean ackReceived;
+    private final int timeoutInMSec;
     
-    public Receiver(InetAddress receiverAddr, int receiverPort, int timeout,
-            boolean ackReceived) {
+    public Receiver(InetAddress receiverAddr, int receiverPort, int timeout) {
         super();
         this.receiverAddr = receiverAddr;
         this.receiverPort = receiverPort;
-        this.timeoutInSec = timeout;
-        this.ackReceived = ackReceived;
-    }
-
-    public boolean isAckReceived() {
-        return ackReceived;
-    }
-
-    public void setAckReceived(boolean ackReceived) {
-        this.ackReceived = ackReceived;
+        this.timeoutInMSec = timeout;
     }
 
     public InetAddress getReceiverAddr() {
@@ -34,7 +23,7 @@ public final class Receiver {
         return receiverPort;
     }
 
-    public int getTimeoutInSec() {
-        return timeoutInSec;
+    public int getTimeoutInMSec() {
+        return timeoutInMSec;
     }
 }

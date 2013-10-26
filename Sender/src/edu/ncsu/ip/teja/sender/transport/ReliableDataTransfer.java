@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,67 +41,102 @@ public class ReliableDataTransfer implements Runnable {
         DatagramSocket socket = null;
         try {
             socket = new DatagramSocket();
+            socket.setSoTimeout(receiver.getTimeoutInMSec());
         } catch (SocketException e) {
             LOGGER.log(Level.SEVERE, "Exception while creating client socket", e);
             return;
         }
         
-        // Create header, datagram objects
-        String checkSum = Checksum.create(data);
-        Header header = new Header(getSequenceNumber(), checkSum, type.DATA, isEOF);
-        Datagram datagram = new Datagram(header, data);
-
-        // Create byte[] for datagram object
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = null;
-        try {
-            oos = new ObjectOutputStream(baos);
-            oos.writeObject(datagram);
-            oos.flush();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Exception while creating ObjectOutputStream", e);
-            return;
-        }
-
-        byte[] buf = baos.toByteArray();
-        
-        System.out.println("Sending buffer of size: " + buf.length);
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, receiver.getReceiverAddr(), receiver.getReceiverPort());
-        try {
-            socket.send(packet);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Exception while sending data packet", e);
+        DatagramPacket dataPacket = createDatagramPacket();
+        if (dataPacket == null) {
+            System.out.println("Unable to create datagram packet. Returning ...");
             return;
         }
         
         byte[] ackBuffer = new byte[11256];
-        packet = new DatagramPacket(ackBuffer, ackBuffer.length);
-        System.out.println("Waiting for ACK...");
-        try {
-            socket.receive(packet);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Exception while recieving ack packet", e);
-            return;
-        }
+        boolean ackReceived = false;
+        DatagramPacket ackPacket = new DatagramPacket(ackBuffer, ackBuffer.length);
         
-        ByteArrayInputStream bais = new ByteArrayInputStream(ackBuffer);
-        ObjectInputStream ois;
+        while (!ackReceived) {
+            try {
+                socket.send(dataPacket);
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Exception while sending data packet", e);
+                return;
+            }
+
+            try {
+                socket.receive(ackPacket);
+            } catch (SocketTimeoutException e) {
+                System.out.println("Timed out after waiting for " + receiver.getTimeoutInMSec() + " milliseconds. Retrying");
+                continue;
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Exception while recieving ack packet", e);
+                return;
+            }
+            
+            ackReceived = isCorrectACKReceived(ackPacket);
+        }
+        socket.close();
+    }
+    
+    private DatagramPacket createDatagramPacket() {
+        // TODO: Create checksum
+        String checkSum = Checksum.create(data);
+        Header header = new Header(getSequenceNumber(), checkSum, type.DATA, isEOF);
+        Datagram datagram = new Datagram(header, data);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = null;
+        DatagramPacket packet = null;
+        try {
+            oos = new ObjectOutputStream(baos);
+            oos.writeObject(datagram);
+            oos.flush();
+            byte[] buf = baos.toByteArray();
+            packet = new DatagramPacket(buf, buf.length, receiver.getReceiverAddr(), receiver.getReceiverPort());
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Exception while creating ObjectOutputStream", e);
+            return null;
+        } finally { 
+            try {
+                oos.close();
+                baos.close();
+            } catch (Exception e) {
+                System.out.println("Exception in finally block: " + e.getMessage());
+            }       
+        }
+        return packet;
+    }
+
+    private boolean isCorrectACKReceived(DatagramPacket ackPacket) {
+        
+        ByteArrayInputStream bais = new ByteArrayInputStream(ackPacket.getData());
+        ObjectInputStream ois = null;
+        boolean ackReceived = false;
         try {
             ois = new ObjectInputStream(bais);
             Datagram ack = (Datagram) ois.readObject();
-            System.out.println("Received ACK with sequence number: " + ack.getHeader().getSequenceNumber()); 
+            if (ack.getHeader().getDatagramType() == type.ACK 
+                    && ack.getHeader().getSequenceNumber() == getSequenceNumber()) {
+                ackReceived = true;
+            } else {
+                System.out.println("Correct ACK not received!");
+            }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Exception while creating ObjectInputStream", e);
-            return;
         } catch (ClassNotFoundException e) {
             LOGGER.log(Level.SEVERE, "Exception while creating ack object", e);
-            return;
+        } finally { 
+            try {
+                ois.close();
+                bais.close();
+            } catch (Exception e) {
+                System.out.println("Exception in finally block: " + e.getMessage());
+            }       
         }
-        
-        
-        socket.close();
+        return ackReceived;
     }
-
+    
     public Receiver getReceiver() {
         return receiver;
     }

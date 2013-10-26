@@ -6,14 +6,10 @@ import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import edu.ncsu.ip.teja.sender.transport.ReliableDataTransfer;
 
 public class P2MPClient {
-    
-    private static Logger LOGGER = Logger.getLogger(P2MPClient.class.getSimpleName());
     
     private final List<Receiver> receiverList;
     private final String filename;
@@ -27,14 +23,22 @@ public class P2MPClient {
     }
     
     public void init() {
+        
         byte[] fileContent = readBytesFromFile();
+        
+        if (fileContent == null) {
+            return;
+        }
+        
         int filePointer = 0;
-        int sequenceNumber = 1;
+        int sequenceNumber = 0;
         boolean isEOF = false;
-        LOGGER.info("filecontent.length: " + fileContent.length);
+        
+        System.out.println("File length: " + fileContent.length);
+        
         while (filePointer <= fileContent.length) {
+            
             int end;
-            List<Thread> rdtThreadList = new LinkedList<Thread>();
             if (filePointer + getMss() > fileContent.length) {
                 end = fileContent.length;
                 isEOF = true;
@@ -46,17 +50,12 @@ public class P2MPClient {
             // System.out.println("Before filePointer: " + filePointer + " , end: " + end + " , isEOF: " + isEOF);
             byte[] data = Arrays.copyOfRange(fileContent, filePointer, end);
             filePointer = filePointer + getMss();
-            // System.out.println("After filePointer: " + filePointer);
-            if (sequenceNumber == 1) {
-                sequenceNumber = 0; 
-            } else if (sequenceNumber == 0){
-                sequenceNumber = 1;
-            }
-            
+        
+            List<Thread> rdtThreadList = new LinkedList<Thread>();
             for(Receiver receiver : receiverList) {
                 ReliableDataTransfer rdtThread = new ReliableDataTransfer(receiver, data, sequenceNumber, isEOF);
                 rdtThreadList.add(new Thread(rdtThread));
-            }   
+            }
             
             for (Thread rdtThread : rdtThreadList) {
                 rdtThread.start();
@@ -66,9 +65,11 @@ public class P2MPClient {
                 try {
                     rdtThread.join();
                 } catch (InterruptedException e) {
-                    LOGGER.log(Level.SEVERE, "Interrupted while waiting for RDT thread to finish", e);
+                    System.out.println("Current thread interrupted while waiting for RDT thread to finish: " + e.getMessage());
                 }
             }
+            
+            sequenceNumber = sequenceNumber^1;
         }
     }
     
@@ -80,17 +81,16 @@ public class P2MPClient {
             b = new byte[(int)f.length()];
             f.read(b);
         } catch (FileNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "File not found", e);
+            System.out.println("File not found" + e.getMessage());
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "IOException while reading file", e);
+            System.out.println("IOException while reading file" + e.getMessage());
         } finally {
             try {
                 f.close();
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "IOException closing file", e);
+                System.out.println("IOException closing file: " + e.getMessage());
             }
         }
-        
         return b;
     }
 
