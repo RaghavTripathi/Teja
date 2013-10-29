@@ -58,6 +58,7 @@ public class ReliableDataTransfer implements Runnable {
         DatagramPacket ackPacket = new DatagramPacket(ackBuffer, ackBuffer.length);
         
         while (!ackReceived) {
+            // System.out.println(new Date() + " : Sending data with sequence number: " + sequenceNumber);
             try {
                 socket.send(dataPacket);
             } catch (IOException e) {
@@ -68,7 +69,7 @@ public class ReliableDataTransfer implements Runnable {
             try {
                 socket.receive(ackPacket);
             } catch (SocketTimeoutException e) {
-                System.out.println("Timed out after waiting for " + receiver.getTimeoutInMSec() + " milliseconds. Retrying");
+                //System.out.println(new Date() + " : Timed out after waiting for " + receiver.getTimeoutInMSec() + " milliseconds. Retrying");
                 continue;
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Exception while recieving ack packet", e);

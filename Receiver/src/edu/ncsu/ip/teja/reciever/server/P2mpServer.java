@@ -12,6 +12,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.Date;
 import java.util.Random;
 
 import edu.ncsu.ip.teja.dao.Datagram;
@@ -76,14 +77,18 @@ public class P2mpServer {
                 ByteArrayInputStream baos = new ByteArrayInputStream(buf);
                 ObjectInputStream oos = new ObjectInputStream(baos);
                 Datagram datagram = (Datagram) oos.readObject();
-                System.out.println("Size of the datagram" + datagram.getData().length);
-                System.out.println("Header Sequence Number:"+(datagram.getHeader()).getSequenceNumber());
-                System.out.println("packet recieved from :"+packet.getAddress());
-                System.out.println("packet recieved from port:"+packet.getPort());
+                //System.out.println("Size of the datagram " + datagram.getData().length);
+                // System.out.println("---------------------------------------------------------------");
+                // System.out.println(new Date() + " : Header Sequence Number: "+(datagram.getHeader()).getSequenceNumber());
+                //System.out.println("packet recieved from :"+packet.getAddress());
+                //System.out.println("packet recieved from port:"+packet.getPort());
                 int presentSequenceNumber = (datagram.getHeader()).getSequenceNumber();
-                if(false/*checkPacketDrop(getLossProbability())*/){
                 
-                   System.out.println("Packet drop sequence number :"+presentSequenceNumber);
+                //boolean isValidSequenuceNumber = checkValidSequenceNumber(presentSequenceNumber);
+                
+                if(checkPacketDrop(getLossProbability())){
+                
+                   //System.out.println("Packet drop sequence number :"+presentSequenceNumber);
                 
                 } else if (false/*checkSum()*/){
                
@@ -101,9 +106,11 @@ public class P2mpServer {
                             
                     }
                     
-                    }
-                else {
-                    System.out.println("****************NO CONDITION MATCH **************");
+                } else {
+                    //System.out.println("Present seq number : "+presentSequenceNumber + " , previos: " +getLastSequenceNumber());
+                    // System.out.println("****************NO CONDITION MATCH **************");
+                    // System.out.println("Sending Ack "+presentSequenceNumber);
+                    sendAck(socket,presentSequenceNumber, packet.getAddress(), packet.getPort());
                 }
                 socket.close(); 
             }  
@@ -143,7 +150,7 @@ public class P2mpServer {
     public boolean checkPacketDrop(double value){
         Random generator = new Random();
         double num = generator.nextDouble();
-        
+        //System.out.println("r : " + num + " , value: " + value);
         if (num <= value)
             return true;
         else
@@ -153,7 +160,6 @@ public class P2mpServer {
     public void writeByteArrayToFile( FileOutputStream fos, byte[] bos){
         
         try {
-            System.out.println("Buffer Length :"+bos.length);
             fos.write(bos);
             fos.flush();
         } catch (IOException e) {
@@ -166,7 +172,7 @@ public class P2mpServer {
     
     public boolean checkValidSequenceNumber(int presentSequenceNumber) {
         int previousSequenceNumber = getLastSequenceNumber();
-        
+        //System.out.println("presentSequenceNumber: " + presentSequenceNumber + " , previousSequenceNumber: " + previousSequenceNumber);
         if (previousSequenceNumber == -1 || (previousSequenceNumber != presentSequenceNumber)) {
                 setLastSequenceNumber(presentSequenceNumber);
                 return true;
