@@ -15,10 +15,10 @@ import java.net.SocketException;
 import java.util.Date;
 import java.util.Random;
 
-import sun.security.krb5.Checksum;
 import edu.ncsu.ip.teja.dao.Datagram;
 import edu.ncsu.ip.teja.dao.Header;
 import edu.ncsu.ip.teja.dao.Header.type;
+import edu.ncsu.ip.teja.reciever.common.Checksum;
 
 public class P2mpServer {
  
@@ -85,8 +85,13 @@ public class P2mpServer {
                 //System.out.println("packet received from port:"+packet.getPort());
                 int presentSequenceNumber = (datagram.getHeader()).getSequenceNumber();
                 String checksum =  (datagram.getHeader()).getChecksum();
-                 //checksum.equalsIgnoreCase(Checksum.create(datagram.getData()));
                 
+                 if(checksum.equalsIgnoreCase(Checksum.create(datagram.getData())))
+                 {
+                     System.out.println("Checksum is true");
+                 } else {
+                     System.out.println("Checksum is false");
+                 }
                 
                 //boolean isValidSequenuceNumber = checkValidSequenceNumber(presentSequenceNumber);
                 
@@ -94,9 +99,9 @@ public class P2mpServer {
                 
                    System.out.println("Packet drop ,"+presentSequenceNumber);
         
-                } else if (false/*checksu*/){
-               
-                    //TODO
+                } else if (checksum.equalsIgnoreCase(Checksum.create(datagram.getData()))){
+                                  
+                    sendAck(socket,presentSequenceNumber, packet.getAddress(), packet.getPort());
                     
                 } else  if (checkValidSequenceNumber(presentSequenceNumber)){
                     // WRITE TO A FILE
