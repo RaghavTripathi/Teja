@@ -9,8 +9,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import edu.ncsu.ip.teja.dao.Datagram;
 import edu.ncsu.ip.teja.dao.Header;
@@ -19,8 +17,6 @@ import edu.ncsu.ip.teja.sender.client.Receiver;
 import edu.ncsu.ip.teja.sender.common.Checksum;
 
 public class ReliableDataTransfer implements Runnable {
-
-    private static Logger LOGGER = Logger.getLogger(ReliableDataTransfer.class.getSimpleName());
     
     private final Receiver receiver;
     private final byte[] data;
@@ -43,7 +39,7 @@ public class ReliableDataTransfer implements Runnable {
             socket = new DatagramSocket();
             socket.setSoTimeout(receiver.getTimeoutInMSec());
         } catch (SocketException e) {
-            LOGGER.log(Level.SEVERE, "Exception while creating client socket", e);
+            System.out.println("Exception while creating client socket: " + e.getMessage());
             return;
         }
         
@@ -58,11 +54,10 @@ public class ReliableDataTransfer implements Runnable {
         DatagramPacket ackPacket = new DatagramPacket(ackBuffer, ackBuffer.length);
         
         while (!ackReceived) {
-            // System.out.println(new Date() + " : Sending data with sequence number: " + sequenceNumber);
             try {
                 socket.send(dataPacket);
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Exception while sending data packet", e);
+                System.out.println("Exception while sending data packet: " + e.getMessage());
                 return;
             }
 
@@ -72,7 +67,7 @@ public class ReliableDataTransfer implements Runnable {
                 //System.out.println(new Date() + " : Timed out after waiting for " + receiver.getTimeoutInMSec() + " milliseconds. Retrying");
                 continue;
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Exception while recieving ack packet", e);
+                System.out.println("Exception while recieving ack packet: " + e.getMessage());
                 return;
             }
             
@@ -82,7 +77,7 @@ public class ReliableDataTransfer implements Runnable {
     }
     
     private DatagramPacket createDatagramPacket() {
-        // TODO: Create checksum
+
         String checkSum = Checksum.create(data);
         Header header = new Header(getSequenceNumber(), checkSum, type.DATA, isEOF);
         Datagram datagram = new Datagram(header, data);
@@ -96,7 +91,7 @@ public class ReliableDataTransfer implements Runnable {
             byte[] buf = baos.toByteArray();
             packet = new DatagramPacket(buf, buf.length, receiver.getReceiverAddr(), receiver.getReceiverPort());
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Exception while creating ObjectOutputStream", e);
+            System.out.println("Exception while creating ObjectOutputStream: " + e.getMessage());
             return null;
         } finally { 
             try {
@@ -121,12 +116,12 @@ public class ReliableDataTransfer implements Runnable {
                     && ack.getHeader().getSequenceNumber() == getSequenceNumber()) {
                 ackReceived = true;
             } else {
-                System.out.println("Correct ACK not received!");
+                // Correct ACK not received, retransmit data packet
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Exception while creating ObjectInputStream", e);
+            System.out.println("Exception while creating ObjectInputStream: " + e.getMessage());
         } catch (ClassNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "Exception while creating ack object", e);
+            System.out.println("Exception while creating ack object: " + e.getMessage());
         } finally { 
             try {
                 ois.close();

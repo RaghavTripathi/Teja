@@ -34,8 +34,6 @@ public class P2MPClient {
         int sequenceNumber = 0;
         boolean isEOF = false;
         
-        //System.out.println("File length: " + fileContent.length);
-        
         while (filePointer <= fileContent.length) {
             
             int end;
@@ -46,19 +44,8 @@ public class P2MPClient {
                 end = filePointer + getMss();
                 isEOF = false;
             }
-            
-            // System.out.println("Before filePointer: " + filePointer + " , end: " + end + " , isEOF: " + isEOF);
             byte[] data = Arrays.copyOfRange(fileContent, filePointer, end);
             filePointer = filePointer + getMss();
-        
-            /*
-            if (sequenceNumber == 0) {
-                sequenceNumber = 1;
-            } else if (sequenceNumber == 1){
-                sequenceNumber = 0;
-            } else {
-                System.out.println("Seq number is fucked!");
-            }*/
             
             List<Thread> rdtThreadList = new LinkedList<Thread>();
             for(Receiver receiver : receiverList) {
@@ -79,7 +66,6 @@ public class P2MPClient {
             }
             
             sequenceNumber = sequenceNumber^1;
-            
         }
     }
     
