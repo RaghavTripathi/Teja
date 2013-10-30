@@ -108,11 +108,13 @@ public class P2mpServer {
                 
             fos.close();
         } catch (SocketException e) {
-              e.printStackTrace();
+            System.out.println("Error with sockets" +e.getMessage());
+            
         } catch (IOException e) {
-              e.printStackTrace();
+            System.out.println("IO execption while reading the file"+e.getMessage());
+            
         } catch (ClassNotFoundException e) {
-              e.printStackTrace();
+            System.out.println("Could not find the class"+e.getMessage());  
         }
         
     }
@@ -132,7 +134,7 @@ public class P2mpServer {
             socket.send(packetSend);
         }
         catch(IOException e) {
-            e.printStackTrace();
+            System.out.println("IO execption while reading the file"+e.getMessage());
         }
         
     }
@@ -157,10 +159,11 @@ public class P2mpServer {
         try {
             fos.write(bos);
             fos.flush();
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
-    }
+            System.out.println("IO execption while reading the file"+e.getMessage());
+        }
        
         
     }
