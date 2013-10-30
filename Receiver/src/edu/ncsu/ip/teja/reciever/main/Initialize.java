@@ -13,9 +13,16 @@ public class Initialize {
         String rex = "[0-9]+";
         
         System.out.println("The IP address is :"+ Utils.getLocalIpAddress());
-        double prob = Double.parseDouble(args[2]);
-        if (args.length != 3  && !args[0].matches(rex)&& (prob <0 || prob >1)){
+        
+        if (args.length != 3){
             System.out.println("Usage : java -jar reciever.jav port# <output_file> <p>[0-1]");
+            System.exit(0);
+        }
+        
+        double prob = Double.parseDouble(args[2]);
+        if (!args[0].matches(rex) || prob <0 || prob >1 ){
+            System.out.println("Usage : java -jar reciever.jav port# <output_file> <p>[0-1]");
+            System.exit(0);
         }
         
         
