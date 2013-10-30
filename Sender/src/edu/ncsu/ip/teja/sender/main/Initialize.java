@@ -36,8 +36,7 @@ public class Initialize {
         
         P2MPClient client = new P2MPClient(receiverList, filename, mss);
         client.init();
-        
-        System.out.println("P2MPClient finished. Exiting!");
+        System.out.println("p2mpclient finished. Exiting!");
         System.exit(1);
     }
     

@@ -64,7 +64,7 @@ public class ReliableDataTransfer implements Runnable {
             try {
                 socket.receive(ackPacket);
             } catch (SocketTimeoutException e) {
-                //System.out.println(new Date() + " : Timed out after waiting for " + receiver.getTimeoutInMSec() + " milliseconds. Retrying");
+                System.out.println("Timeout, sequence number = " + getSequenceNumber());
                 continue;
             } catch (IOException e) {
                 System.out.println("Exception while recieving ack packet: " + e.getMessage());
