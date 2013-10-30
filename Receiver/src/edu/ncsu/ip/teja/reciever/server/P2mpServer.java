@@ -78,22 +78,8 @@ public class P2mpServer {
                 ByteArrayInputStream baos = new ByteArrayInputStream(buf);
                 ObjectInputStream oos = new ObjectInputStream(baos);
                 Datagram datagram = (Datagram) oos.readObject();
-                //System.out.println("Size of the datagram " + datagram.getData().length);
-                // System.out.println("---------------------------------------------------------------");
-                // System.out.println(new Date() + " : Header Sequence Number: "+(datagram.getHeader()).getSequenceNumber());
-                //System.out.println("packet received from :"+packet.getAddress());
-                //System.out.println("packet received from port:"+packet.getPort());
                 int presentSequenceNumber = (datagram.getHeader()).getSequenceNumber();
                 String checksum =  (datagram.getHeader()).getChecksum();
-                
-                 if(checksum.equalsIgnoreCase(Checksum.create(datagram.getData())))
-                 {
-                     System.out.println("Checksum is true");
-                 } else {
-                     System.out.println("Checksum is false");
-                 }
-                
-                //boolean isValidSequenuceNumber = checkValidSequenceNumber(presentSequenceNumber);
                 
                 if(checkPacketDrop(getLossProbability())){
                 
@@ -111,14 +97,10 @@ public class P2mpServer {
                     sendAck(socket,presentSequenceNumber, packet.getAddress(), packet.getPort());
                     if (datagram.getHeader().isEOF()){
                             check = false;
-                            System.out.println("End of file");
-                            
                     }
                     
                 } else {
-                    //System.out.println("Present SEQ number : "+presentSequenceNumber + " , previous: " +getLastSequenceNumber());
-                    // System.out.println("****************NO CONDITION MATCH **************");
-                    // System.out.println("Sending ACk "+presentSequenceNumber);
+                   
                     sendAck(socket,presentSequenceNumber, packet.getAddress(), packet.getPort());
                 }
                 socket.close(); 
@@ -138,7 +120,7 @@ public class P2mpServer {
     public void sendAck(DatagramSocket socket,int seqNumber, InetAddress IPAddress, int port) {
       
         try {
-            Header hd = new Header(seqNumber, "1010101", type.ACK,false);
+            Header hd = new Header(seqNumber, "1010101010101010", type.ACK,false);
             Datagram dg = new Datagram(hd, null);
             ByteArrayOutputStream ba = new ByteArrayOutputStream();
             ObjectOutputStream objos = new ObjectOutputStream(ba);
@@ -160,10 +142,10 @@ public class P2mpServer {
         //Random generator = new Random();
         //double num = generator.nextDouble();
         double num = Math.random();
-        while( num ==0 ) {
+        while( num == 0 ) {
             num = Math.random();
         }
-        //System.out.println("r : " + num + " , value: " + value);
+        
         if (num <= value)
             return true;
         else
@@ -185,7 +167,7 @@ public class P2mpServer {
     
     public boolean checkValidSequenceNumber(int presentSequenceNumber) {
         int previousSequenceNumber = getLastSequenceNumber();
-        //System.out.println("presentSequenceNumber: " + presentSequenceNumber + " , previousSequenceNumber: " + previousSequenceNumber);
+       
         if (previousSequenceNumber == -1 || (previousSequenceNumber != presentSequenceNumber)) {
                 setLastSequenceNumber(presentSequenceNumber);
                 return true;
@@ -194,10 +176,5 @@ public class P2mpServer {
         }
     }
     
-    public boolean checkSum() {
-        
-        
-        return true;
-    }
     
 }

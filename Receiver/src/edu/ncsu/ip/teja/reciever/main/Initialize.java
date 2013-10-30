@@ -10,9 +10,16 @@ public class Initialize {
 
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        System.out.println("The IP address is :"+ Utils.getLocalIpAddress());
+        String rex = "[0-9]+";
         
-        P2mpServer p2mpser = new P2mpServer(Integer.parseInt(args[0]), args[1], Double.parseDouble(args[2]));
+        System.out.println("The IP address is :"+ Utils.getLocalIpAddress());
+        double prob = Double.parseDouble(args[2]);
+        if (args.length != 3  && !args[0].matches(rex)&& prob >=0 && prob <=1){
+            System.out.println("Usage : java -jar reciever.jav port# <output_file> <p>[0-1]");
+        }
+        
+        
+        P2mpServer p2mpser = new P2mpServer(Integer.parseInt(args[0]), args[1], prob);
         p2mpser.init();
     }
 
