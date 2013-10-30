@@ -3,12 +3,12 @@
               Any modifications will be overwritten.
               To include a user specific buildfile here, simply create one in the same
               directory with the processing instruction <?eclipse.ant.import?>
-              as the first entry and export the buildfile again. --><project basedir="." default="build" name="Sender">
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="Receiver">
     <property environment="env"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
-    <path id="Sender.classpath">
+    <path id="Receiver.classpath">
         <pathelement location="bin"/>
     </path>
     <target name="init">
@@ -21,7 +21,7 @@
     </target>
     <target name="clean">
         <delete dir="bin"/>
-    	<delete file="p2mpclient.jar" />
+    	<delete file="p2mpserver.jar" />
     </target>
     <target depends="clean" name="cleanall"/>
     <target depends="build-subprojects,build-project,jar" name="build"/>
@@ -30,15 +30,15 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
-            <classpath refid="Sender.classpath"/>
+            <classpath refid="Receiver.classpath"/>
         </javac>
     </target>
-    <target name="jar" description="Create jar and MANIFEST.MF">
-        <jar jarfile="p2mpclient.jar" basedir="bin">
+  	<target name="jar" description="Create jar and MANIFEST.MF">
+        <jar jarfile="p2mpserver.jar" basedir="bin">
             <manifest>
-                <attribute name="Main-Class" value="edu.ncsu.ip.teja.sender.main.Initialize" />
+                <attribute name="Main-Class" value="edu.ncsu.ip.teja.reciever.main.Initialize" />
             </manifest>
         </jar>
-    </target>          	
+  	</target>          	
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
 </project>
