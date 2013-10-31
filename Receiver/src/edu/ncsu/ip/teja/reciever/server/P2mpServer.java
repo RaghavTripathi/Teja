@@ -3,7 +3,6 @@ package edu.ncsu.ip.teja.reciever.server;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,8 +11,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.Date;
-import java.util.Random;
 
 import edu.ncsu.ip.teja.dao.Datagram;
 import edu.ncsu.ip.teja.dao.Header;
@@ -83,7 +80,7 @@ public class P2mpServer {
                 
                 if(checkPacketDrop(getLossProbability())){
                 
-                   System.out.println("Packet drop ,"+presentSequenceNumber);
+                   System.out.println("Packet loss, sequence number = " + presentSequenceNumber);
         
                 } else if (checksum.equalsIgnoreCase(Checksum.create(datagram.getData()))){
                                   
