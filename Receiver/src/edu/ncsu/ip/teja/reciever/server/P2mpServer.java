@@ -82,10 +82,8 @@ public class P2mpServer {
                 
                    System.out.println("Packet loss, sequence number = " + presentSequenceNumber);
         
-                } else if (checksum.equalsIgnoreCase(Checksum.create(datagram.getData()))){
-                                  
-                    sendAck(socket,presentSequenceNumber, packet.getAddress(), packet.getPort());
-                    
+                } else if (!checksum.equalsIgnoreCase(Checksum.create(datagram.getData()))){
+                                                      
                 } else  if (checkValidSequenceNumber(presentSequenceNumber)){
                     // WRITE TO A FILE
                     writeByteArrayToFile(fos, datagram.getData());
